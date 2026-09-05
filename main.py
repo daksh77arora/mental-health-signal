@@ -98,23 +98,27 @@ def model_info():
 
 
 def generate_advice(data: StudentData) -> list[str]:
-    advice = []
+    priorities = []
 
     if data.stress_level in {'High', 'Very High'}:
-        advice.append('Try a short reset today: step away from the screen, breathe slowly, or talk with someone you trust.')
+        severity = 3 if data.stress_level == 'Very High' else 2
+        priorities.append((severity, f"Your selected stress level is {data.stress_level.lower()}. Try a short reset today and talk with someone you trust."))
     if data.sleep_hours_per_night < 7:
-        advice.append('Protect a consistent sleep window and reduce screen use shortly before bed.')
+        severity = min(3, max(1, round(7 - data.sleep_hours_per_night)))
+        priorities.append((severity, f"You entered {data.sleep_hours_per_night:g} hours of sleep. Protect a consistent sleep window and reduce screen use before bed."))
     if data.avg_daily_usage_hours > 6 or data.daily_unlocks > 150:
-        advice.append('Create one screen-free block and silence non-essential notifications to make breaks easier.')
+        severity = 2 if data.avg_daily_usage_hours > 8 or data.daily_unlocks > 200 else 1
+        priorities.append((severity, f"Your inputs show {data.avg_daily_usage_hours:g} hours of screen time and {data.daily_unlocks} unlocks. Create one screen-free block today."))
     if data.physical_activity_hours < 0.5:
-        advice.append('Add a brief walk or stretch break; small, repeatable activity is a useful starting point.')
+        priorities.append((1, f"You entered {data.physical_activity_hours:g} hours of activity. Add a brief walk or stretch break as a manageable starting point."))
     if data.study_hours > 8:
-        advice.append('Schedule short recovery breaks around study sessions so focused work is sustainable.')
+        priorities.append((1, f"You entered {data.study_hours:g} study hours. Schedule short recovery breaks so focused work is sustainable."))
 
-    if not advice:
-        advice.append('Keep your current rhythm steady and check in with yourself if your energy or stress changes.')
+    if not priorities:
+        return ['Your selected habits do not trigger a specific reminder. Keep your current rhythm steady and check in if your energy or stress changes.']
 
-    return advice[:3]
+    priorities.sort(key=lambda item: item[0], reverse=True)
+    return [message for _, message in priorities[:3]]
 
 
 @app.post('/predict', response_model=PredictionResponse) #6.77777

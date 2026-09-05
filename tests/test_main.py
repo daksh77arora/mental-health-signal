@@ -47,6 +47,7 @@ class PredictionTests(unittest.TestCase):
         advice = generate_advice(stressed)
         self.assertLessEqual(len(advice), 3)
         self.assertTrue(any('sleep' in item.lower() for item in advice))
+        self.assertTrue(any('5 hours' in item for item in advice))
 
     def test_input_validation_rejects_invalid_age(self):
         with self.assertRaises(ValueError):
