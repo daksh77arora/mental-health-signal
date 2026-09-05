@@ -1,4 +1,5 @@
 import joblib
+import os
 import pandas as pd
 from pathlib import Path
 from fastapi import FastAPI
@@ -11,14 +12,16 @@ BASE_DIR = Path(__file__).resolve().parent
 model = joblib.load(BASE_DIR / 'Mental_Health_Model.pkl')
 top_countries = ['Other','India','USA','Canada','Australia','UK','Germany','Mexico','Turkey','France']
 
-app = FastAPI()
+app = FastAPI(title='Mental Health Signal API', version='1.0.0')
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+cors_origins = [origin.strip() for origin in os.getenv('CORS_ORIGINS', '').split(',') if origin.strip()]
+if cors_origins:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=cors_origins,
+        allow_methods=['GET', 'POST'],
+        allow_headers=['Content-Type'],
+    )
 
 
 #A first Pydantic Model
@@ -41,8 +44,7 @@ class StudentData(BaseModel):
 
 # Describe what we send back
 class PredictionResponse(BaseModel):
-    predicted_mental_health_score:float
-    #6.777777 -> float
+    predicted_mental_health_score: float = Field(..., ge=0, le=10)
 
 
 
@@ -69,24 +71,23 @@ def health():
 
 @app.post('/predict', response_model=PredictionResponse) #6.77777
 def predict(data: StudentData):
+    country_group = data.country if data.country in top_countries else 'Other'
 
-   country_group = data.country if data.country in top_countries else "Other"
+    input_row = pd.DataFrame([{
+        'Age': data.age,
+        'Gender': data.gender,
+        'Country': data.country,
+        'Academic_Level': data.academic_level,
+        'Most_Used_Platform': data.most_used_platform,
+        'Purpose_Of_Use': data.purpose_of_use,
+        'Avg_Daily_Usage_Hours': data.avg_daily_usage_hours,
+        'Daily_Unlocks': data.daily_unlocks,
+        'Study_Hours': data.study_hours,
+        'Physical_Activity_Hours': data.physical_activity_hours,
+        'Sleep_Hours_Per_Night': data.sleep_hours_per_night,
+        'Stress_Level': data.stress_level,
+        'Grouped_country': country_group,
+    }])
 
-   input_row = pd.DataFrame([{
-        'Age'                       :data.age,
-        'Gender'                    :data.gender,
-        'Country'                   :data.country,
-        'Academic_Level'            :data.academic_level,
-        'Most_Used_Platform'        :data.most_used_platform,
-        'Purpose_Of_Use'            :data.purpose_of_use,
-        'Avg_Daily_Usage_Hours'     :data.avg_daily_usage_hours,
-        'Daily_Unlocks'             :data.daily_unlocks,
-        'Study_Hours'               :data.study_hours,
-        'Physical_Activity_Hours'   :data.physical_activity_hours,
-        'Sleep_Hours_Per_Night'     :data.sleep_hours_per_night,
-        'Stress_Level'              :data.stress_level,
-        'Grouped_country'           :country_group
-   }])
-
-   prediction = model.predict(input_row)[0] #6.77
-   return PredictionResponse(predicted_mental_health_score=round(float(prediction),2))
+    prediction = max(0.0, min(10.0, float(model.predict(input_row)[0])))
+    return PredictionResponse(predicted_mental_health_score=round(prediction, 2))

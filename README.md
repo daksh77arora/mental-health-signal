@@ -61,6 +61,25 @@ The model was serialized with scikit-learn `1.9.0`. Keep that version aligned wi
 
 The response contains `predicted_mental_health_score`, rounded to two decimal places.
 
+## Model Results
+
+The bundled random-forest regression pipeline was evaluated on a held-out test split from the included dataset:
+
+| Metric | Test result |
+| --- | ---: |
+| R-squared | 0.878 |
+| Mean absolute error | 0.347 score points |
+
+The model is useful as a project demonstration, but these results are not clinical validation. Performance may change on a different population or dataset.
+
+## Tests
+
+Run the lightweight regression and validation checks with:
+
+```powershell
+python -m unittest discover -s tests -v
+```
+
 ## Deployment Recommendation
 
 Deploy this first on **Render** as a Python web service. It supports FastAPI, the bundled model file, and a simple start command without requiring a separate frontend host.
@@ -69,6 +88,8 @@ Deploy this first on **Render** as a Python web service. It supports FastAPI, th
 - Start command: `uvicorn main:app --host 0.0.0.0 --port $PORT`
 
 The service must have enough memory to load the scikit-learn pipeline. Do not commit secrets, virtual environments, caches, or private user data.
+
+For a separate frontend origin, set `CORS_ORIGINS` to a comma-separated list of trusted origins. It is not required when the frontend is served by this API.
 
 ## Privacy and Responsible Use
 
