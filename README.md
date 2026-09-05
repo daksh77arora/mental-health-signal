@@ -34,6 +34,7 @@ uvicorn main:app --host 127.0.0.1 --port 2200 --reload
 Open `http://127.0.0.1:2200/`.
 
 - Health check: `http://127.0.0.1:2200/health`
+- Model metadata: `http://127.0.0.1:2200/model-info`
 - Interactive API docs: `http://127.0.0.1:2200/docs`
 
 The model was serialized with scikit-learn `1.9.0`. Keep that version aligned with the runtime when running or deploying the app.
@@ -79,6 +80,8 @@ Run the lightweight regression and validation checks with:
 ```powershell
 python -m unittest discover -s tests -v
 ```
+
+GitHub Actions runs the same test command on every push and pull request to `main`.
 
 ## Deployment Recommendation
 

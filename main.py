@@ -13,6 +13,20 @@ model = joblib.load(BASE_DIR / 'Mental_Health_Model.pkl')
 top_countries = ['Other','India','USA','Canada','Australia','UK','Germany','Mexico','Turkey','France']
 
 app = FastAPI(title='Mental Health Signal API', version='1.0.0')
+MODEL_FEATURES = [
+    'Study_Hours',
+    'Age',
+    'Avg_Daily_Usage_Hours',
+    'Daily_Unlocks',
+    'Physical_Activity_Hours',
+    'Sleep_Hours_Per_Night',
+    'Stress_Level',
+    'Gender',
+    'Academic_Level',
+    'Most_Used_Platform',
+    'Purpose_Of_Use',
+    'Grouped_country',
+]
 
 cors_origins = [origin.strip() for origin in os.getenv('CORS_ORIGINS', '').split(',') if origin.strip()]
 if cors_origins:
@@ -67,6 +81,19 @@ def frontend_script():
 @app.get('/health')
 def health():
     return {'status': 'ok'}
+
+
+@app.get('/model-info')
+def model_info():
+    return {
+        'model_type': type(model).__name__,
+        'score_range': [0, 10],
+        'features': MODEL_FEATURES,
+        'training_metrics': {
+            'test_r2': 0.878,
+            'test_mae': 0.347,
+        },
+    }
 
 
 @app.post('/predict', response_model=PredictionResponse) #6.77777

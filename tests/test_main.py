@@ -1,8 +1,6 @@
 import unittest
 
-from fastapi import HTTPException
-
-from main import StudentData, health, predict
+from main import StudentData, health, model_info, predict
 
 
 class PredictionTests(unittest.TestCase):
@@ -24,6 +22,12 @@ class PredictionTests(unittest.TestCase):
 
     def test_health_check(self):
         self.assertEqual(health(), {'status': 'ok'})
+
+    def test_model_info_exposes_reproducible_metadata(self):
+        info = model_info()
+        self.assertEqual(info['score_range'], [0, 10])
+        self.assertIn('test_r2', info['training_metrics'])
+        self.assertIn('Grouped_country', info['features'])
 
     def test_prediction_is_a_score_in_range(self):
         response = predict(self.sample)
