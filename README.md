@@ -60,7 +60,9 @@ The model was serialized with scikit-learn `1.9.0`. Keep that version aligned wi
 }
 ```
 
-The response contains `predicted_mental_health_score`, rounded to two decimal places.
+The response contains `predicted_mental_health_score`, rounded to two decimal places, and up to three personalized `advice` items. Advice is generated locally from the validated inputs; no external AI service or API key is required.
+
+The advice is wellness-oriented rather than diagnostic. It prioritizes practical actions around sleep, stress, screen time, activity, and study recovery, with a neutral fallback when no threshold is triggered.
 
 ## Model Results
 

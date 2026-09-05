@@ -16,6 +16,7 @@
   const scoreNumberEl = document.getElementById("score-number");
   const scoreBandEl = document.getElementById("score-band");
   const scoreContextEl = document.getElementById("score-context");
+  const adviceListEl = document.getElementById("advice-list");
   const gaugeFill = document.getElementById("gauge-fill");
   const errorCopyEl = document.getElementById("error-copy");
 
@@ -228,13 +229,19 @@
     requestAnimationFrame(tick);
   }
 
-  function renderResult(score) {
+  function renderResult(score, advice) {
     const clamped = Math.max(0, Math.min(10, score));
     const { label, context } = bandFor(clamped);
 
     animateScoreNumber(score);
     scoreBandEl.textContent = label;
     scoreContextEl.textContent = context;
+    adviceListEl.replaceChildren();
+    (Array.isArray(advice) ? advice : []).slice(0, 3).forEach((item) => {
+      const adviceItem = document.createElement("li");
+      adviceItem.textContent = item;
+      adviceListEl.appendChild(adviceItem);
+    });
 
     // reset then animate the arc fill on next frame
     gaugeFill.style.transition = "none";
@@ -324,7 +331,7 @@
         return;
       }
 
-      renderResult(data.predicted_mental_health_score);
+      renderResult(data.predicted_mental_health_score, data.advice);
     } catch (err) {
       renderError(
         "Can't reach the server",

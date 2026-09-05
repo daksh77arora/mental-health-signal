@@ -59,6 +59,7 @@ class StudentData(BaseModel):
 # Describe what we send back
 class PredictionResponse(BaseModel):
     predicted_mental_health_score: float = Field(..., ge=0, le=10)
+    advice: list[str]
 
 
 
@@ -96,6 +97,26 @@ def model_info():
     }
 
 
+def generate_advice(data: StudentData) -> list[str]:
+    advice = []
+
+    if data.stress_level in {'High', 'Very High'}:
+        advice.append('Try a short reset today: step away from the screen, breathe slowly, or talk with someone you trust.')
+    if data.sleep_hours_per_night < 7:
+        advice.append('Protect a consistent sleep window and reduce screen use shortly before bed.')
+    if data.avg_daily_usage_hours > 6 or data.daily_unlocks > 150:
+        advice.append('Create one screen-free block and silence non-essential notifications to make breaks easier.')
+    if data.physical_activity_hours < 0.5:
+        advice.append('Add a brief walk or stretch break; small, repeatable activity is a useful starting point.')
+    if data.study_hours > 8:
+        advice.append('Schedule short recovery breaks around study sessions so focused work is sustainable.')
+
+    if not advice:
+        advice.append('Keep your current rhythm steady and check in with yourself if your energy or stress changes.')
+
+    return advice[:3]
+
+
 @app.post('/predict', response_model=PredictionResponse) #6.77777
 def predict(data: StudentData):
     country_group = data.country if data.country in top_countries else 'Other'
@@ -117,4 +138,7 @@ def predict(data: StudentData):
     }])
 
     prediction = max(0.0, min(10.0, float(model.predict(input_row)[0])))
-    return PredictionResponse(predicted_mental_health_score=round(prediction, 2))
+    return PredictionResponse(
+        predicted_mental_health_score=round(prediction, 2),
+        advice=generate_advice(data),
+    )

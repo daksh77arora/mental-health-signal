@@ -475,6 +475,18 @@ input:invalid:not(:placeholder-shown):not(:focus) {
   margin: 0 0 22px;
 }
 
+.advice-block { width: min(100%, 270px); margin: 0 0 20px; }
+.advice-heading {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(234,243,238,0.48);
+  margin: 0 0 8px;
+}
+.advice-list { margin: 0; padding-left: 18px; color: rgba(234,243,238,0.78); font-size: 12px; }
+.advice-list li { padding-left: 3px; margin-bottom: 7px; }
+
 .disclaimer-inline { font-size: 11px; line-height: 1.4; color: rgba(234,243,238,0.48); max-width: 235px; margin: 0 0 20px; }
 
 .reset-btn {
